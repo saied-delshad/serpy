@@ -1,6 +1,7 @@
 from serpy.fields import Field
 import operator
 import six
+import json
 
 
 class SerializerBase(Field):
@@ -101,6 +102,7 @@ class Serializer(six.with_metaclass(SerializerMeta, SerializerBase)):
         self.instance = instance
         self.many = many
         self._data = None
+        self._object = None
 
     def _serialize(self, instance, fields):
         v = {}
@@ -131,6 +133,9 @@ class Serializer(six.with_metaclass(SerializerMeta, SerializerBase)):
             return [serialize(o, fields) for o in instance]
         return self._serialize(instance, fields)
 
+    def to_object(self, instance):
+        return instance
+
     @property
     def data(self):
         """Get the serialized data from the :class:`Serializer`.
@@ -141,6 +146,17 @@ class Serializer(six.with_metaclass(SerializerMeta, SerializerBase)):
         if self._data is None:
             self._data = self.to_value(self.instance)
         return self._data
+
+    @property
+    def object(self):
+        """Get the serialized data from the :class:`Serializer` as class instance object.
+
+        The data will be cached for future accesses.
+        """
+        # Cache the data for next time .data is called.
+        if self._object is None:
+            self._object = self.to_object(self.instance)
+        return self._object
 
 
 class DictSerializer(Serializer):
