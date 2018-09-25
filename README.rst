@@ -82,9 +82,32 @@ Simple Example
     FooSerializer(f).data
     # {'x': 1, 'y': 'hello', 'z': 9.5}
 
+    # ======== added in my fork =========================
+    foo_obj = FooSerializer(f).object
+
+    foo_obj.x
+    # 1
+    foo_obj.y
+    # 'hello'
+    foo_obj.z
+    # 9.5
+    # ======== end added in my fork =====================
+
+
     fs = [Foo(i) for i in range(100)]
     FooSerializer(fs, many=True).data
     # [{'x': 0, 'y': 'hello', 'z': 9.5}, {'x': 1, 'y': 'hello', 'z': 9.5}, ...]
+
+    # ======== added in my fork =========================
+    fs = [Foo(i) for i in range(100)]
+    foo_obj_list = FooSerializer(fs, many=True).object
+    for foo in foo_obj_list:
+      print(foo.x, foo.y, foo.z)
+    # 0 hello 9.5
+    # 1 hello 9.5
+    # ...
+    # ======== end added in my fork =====================
+
 
 Nested Example
 --------------
