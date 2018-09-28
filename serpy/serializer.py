@@ -124,7 +124,7 @@ class Serializer(six.with_metaclass(SerializerMeta, SerializerBase)):
                         result = to_value(result)
             v[name] = result
 
-        return v
+        return json.dumps(v)
 
     def to_value(self, instance):
         fields = self._compiled_fields
@@ -133,8 +133,21 @@ class Serializer(six.with_metaclass(SerializerMeta, SerializerBase)):
             return [serialize(o, fields) for o in instance]
         return self._serialize(instance, fields)
 
-    def to_object(self, instance):
-        return instance
+    def to_object(self, instance, object_type):
+        json_obj = json.loads(instance)
+        output = None
+        if type(json_obj) is list:
+            output = []
+            for obj in json_obj:
+                # must create instance here, otherwise it will over-write on first object
+                object_instance = object_type()
+                object_instance.__dict__ = obj
+                output.append(object_instance)
+        else:
+            object_instance = object_type()
+            object_instance.__dict__ = json_obj
+            output = object_instance 
+        return output
 
     @property
     def data(self):
@@ -147,15 +160,14 @@ class Serializer(six.with_metaclass(SerializerMeta, SerializerBase)):
             self._data = self.to_value(self.instance)
         return self._data
 
-    @property
-    def object(self):
-        """Get the serialized data from the :class:`Serializer` as class instance object.
+    def object(self, object_type):
+        """Get the serialized data from the json string input and convert it to class instance object (object_type).
 
         The data will be cached for future accesses.
         """
         # Cache the data for next time .data is called.
         if self._object is None:
-            self._object = self.to_object(self.instance)
+            self._object = self.to_object(self.instance, object_type)
         return self._object
 
 
